@@ -6,9 +6,8 @@ from multiprocessing.pool import Pool
 import requests
 from lxml import etree
 
-from ez_utils import fls_log, allot_list, err_check
+from ez_utils import flog, allot_list, err_check
 
-flog = fls_log(handler_name="spider")
 
 # 进程数
 PCNT = 2
@@ -40,7 +39,7 @@ def save_img(img_url, path, name):
                 f.write(requests.get(img_url, headers=HEADERS, timeout=(10, 25)).content)
     except Exception as e:
         traceback.print_exc()
-        flog.log_debug(">>>>>>>>>>>save-error:" + img_url)
+        flog.debug(">>>>>>>>>>>save-error:" + img_url)
 
 
 def doWork(par1: str, par2: str = 'par2', par3: str = 'par3'):
@@ -51,7 +50,7 @@ def doWork(par1: str, par2: str = 'par2', par3: str = 'par3'):
     :param par3: 备用参数
     :return:
     """
-    flog.log_debug("work\t" + par1)
+    flog.debug("work\t" + par1)
     try:
         resp = requests.get(par1, headers=HEADERS, timeout=(20, 60))
         html = etree.HTML(resp.content.decode('utf8'))
@@ -68,11 +67,11 @@ def doWork(par1: str, par2: str = 'par2', par3: str = 'par3'):
             save_img(img_url, SAVE_PATH, file_name + '.' + img_url.split('.')[-1])
     except Exception as e:
         traceback.print_exc()
-        flog.log_debug(">>>>>>>>>>>error:" + par1)
+        flog.debug(">>>>>>>>>>>error:" + par1)
 
 
 def run_multithread(id: str, workPars: list, threadsCnt: int):
-    # flog.log_debug(id + '当前进程任务:' + ( " ".join(str(i) for i in workPars) ))
+    # flog.debug(id + '当前进程任务:' + ( " ".join(str(i) for i in workPars) ))
     begin = 0
     # start = time.time()
     while 1:
@@ -90,7 +89,7 @@ def run_multithread(id: str, workPars: list, threadsCnt: int):
             t.join()
         begin += threadsCnt
     # end = time.time()
-    # flog.log_debug(id + '当前进程耗时:%.2fs' % ( (end - start) ))
+    # flog.debug(id + '当前进程耗时:%.2fs' % ( (end - start) ))
 
 
 @err_check
@@ -98,7 +97,7 @@ def mixed_process_thread_crawler(processorsCnt: int, threadsCnt: int):
     pool = Pool(processorsCnt)
     workPars = URL_LIST
     url_groups = allot_list(workPars, processorsCnt)
-    flog.log_debug("``总任务组数:" + str(len(url_groups)))
+    flog.debug("``总任务组数:" + str(len(url_groups)))
     cnt = 0
     for par_group in url_groups:
         cnt += 1
@@ -108,6 +107,6 @@ def mixed_process_thread_crawler(processorsCnt: int, threadsCnt: int):
 
 
 if __name__ == '__main__':
-    flog.log_debug("``START>>" + datetime.datetime.now().strftime('%Y/%m/%d-%H:%M:%S'))
+    flog.debug("``START>>" + datetime.datetime.now().strftime('%Y/%m/%d-%H:%M:%S'))
     mixed_process_thread_crawler(PCNT, TCNT)
-    flog.log_debug("``END>>" + datetime.datetime.now().strftime('%Y/%m/%d-%H:%M:%S'))
+    flog.debug("``END>>" + datetime.datetime.now().strftime('%Y/%m/%d-%H:%M:%S'))
